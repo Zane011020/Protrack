@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include 'head.html' %}
+
+<body>
+
+    {% include 'header.html' %}
+    {% include 'sidebar.html' %}
+
+    <main id="main" class="main">
+        <div class="pagetitle">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert-container">
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+            <h1>Manage Group Members</h1>
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item active">Manage Group Members</li>
+                </ol>
+            </nav>
+        </div>
+
+        <section class="section">
+            <!-- Add Member Form -->
+            <div class="add-member">
+                <h3>Add New Member</h3>
+                <form action="{{ url_for('ManageGroupMembers') }}" method="post">
+                <div class="mb-3">
+    <label for="memberUsername" class="form-label">Member Name</label>
+    <select class="form-control" id="memberUsername" name="memberUsername" required>
+        <option value="" selected disabled>Select a member you want to add</option>
+        {% for user in users %}
+        <option value="{{ user.username }}">{{ user.username }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+
+
+                    <!-- <div class="mb-3">
+                        <label for="memberRole" class="form-label">Member Role</label>
+                        <select class="form-control" id="memberRole" name="memberRole" required>
+                            <option value="Student">Student</option>
+                            <option value="Teacher">Teacher</option>
+                        </select>
+                    </div> -->
+                    <div class="mb-3">
+                        <label for="memberGroup" class="form-label">Assign to Group</label>
+                        <select class="form-control" id="memberGroup" name="memberGroup" required>
+                            <option value="" selected disabled>Select a group</option>
+                            {% for group in groups %}
+                                <option value="{{ group.id }}">{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Member</button>
+                </form>
+            </div>
+
+            <!-- List of Members -->
+            <div class="list-members mt-5">
+                <h3>Current Members</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+    <script>
+        const CURRENT_USER_ID = {{ current_user_id }};
+        document.getElementById('memberGroup').addEventListener('change', function() {
+            var groupId = this.value;
+            fetch(`/get_group_members/${groupId}`).then(response => response.json()).then(data => {
+                const tbody = document.querySelector('.list-members tbody');
+                tbody.innerHTML = ''; 
+        
+                data.members.forEach((member, index) => {
+                    const row = tbody.insertRow(); 
+
+                    const cellNumber = row.insertCell(0);
+                    cellNumber.textContent = index + 1;
+        
+                    const cellName = row.insertCell(1);
+                    cellName.textContent = member.username;
+        
+        
+                    const cellActions = row.insertCell(2);
+                    if (member.id === CURRENT_USER_ID) { // 假设你已经在某处定义了 CURRENT_USER_ID
+                        cellActions.innerHTML = `<button class="btn btn-warning" onclick="removeMember(${member.id}, ${groupId})">Leave Group</button>`;
+                    } else {
+                        cellActions.innerHTML = `<button class="btn btn-danger" onclick="removeMember(${member.id}, ${groupId})">Remove</button>`;
+                    }
+                });
+            });
+        });
+        
+        function removeMember(memberId, groupId) {
+
+            if (memberId === CURRENT_USER_ID) {
+                const isConfirmed = confirm("Are you sure you want to leave this group?");
+                if (isConfirmed) {
+                    leaveGroup(groupId);
+                }
+            } else {
+
+                fetch(`/remove_group_member/${memberId}/${groupId}`, { method: 'POST' })
+                    .then(response => {
+                        if (response.ok) {
+                            document.getElementById('memberGroup').dispatchEvent(new Event('change'));
+                        }
+                    });
+            }
+        }
+
+        function leaveGroup(groupId) {
+            fetch(`/leave_group/${groupId}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        alert('You have left the group successfully.');
+                        location.reload(); 
+                    }
+                });
+        }
+
+        </script>
+        
+        
+    {% include 'js.html' %}
+</body>
+
+</html>

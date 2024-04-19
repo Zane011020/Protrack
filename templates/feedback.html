@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include 'head.html' %}
+
+<body>
+
+    {% include 'header.html' %}
+    {% include 'sidebar.html' %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="alert-container">
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+        <h1>Feedback</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item active">Feedback</li>
+            </ol>
+        </nav>
+    </div>
+
+    
+    <section class="section">
+        
+
+        <form method="POST" action="{{ url_for('feedback') }}">
+            <h2 class="mt-4">Send Your Feedback</h2>
+            <div class="form-group">
+                <label for="groupName">Select Group:</label>
+                <select class="form-control" id="groupName" name="groupName">
+                    <option value="" selected disabled>-- Select a Group --</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <textarea class="form-control" name="messageContent" rows="3" placeholder="Enter your feedback here..."></textarea>
+            <button class="btn btn-primary mt-2" type="submit" name="sendMessage">Send Feedback</button>
+        </form>
+        
+        <h2 class="mt-4">Your Feedback History</h2>
+        <ul class="list-group">
+            {% for message in feedback_messages %}
+                <li class="list-group-item">
+                    <strong>Sent to Group:</strong> {{ message.group.name if message.group else 'N/A' }} <br>
+                    <strong>Content:</strong> {{ message.content }} <br>
+                    <small class="text-muted">Sent on {{ message.date_sent.strftime('%Y-%m-%d %H:%M') }}</small>
+                </li>
+            {% else %}
+                <li class="list-group-item">No feedback sent yet.</li>
+            {% endfor %}
+        </ul>
+        
+               
+
+    </section>
+
+</main>
+
+
+{% include 'js.html' %}
+
+</body>
+</html>

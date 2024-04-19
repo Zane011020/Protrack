@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include 'head.html' %}
+
+<body>
+
+    {% include 'header.html' %}
+    {% include 'sidebar.html' %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="alert-container">
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+        <h1>Final rating</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item active">Final rating</li>
+            </ol>
+        </nav>
+    </div>
+
+    
+    <section class="section">
+        
+
+        <form method="POST" action="{{ url_for('rating') }}">
+            <div class="mb-3">
+                <label for="selectedProject" class="form-label">Select Project:</label>
+                <select class="form-control" id="selectedProject" name="selectedProject" onchange="updateGroups(this.value)">
+                    <option value="" selected disabled>-- Select a Project --</option>
+                    {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="selectedGroup" class="form-label">Select Group:</label>
+                <select class="form-control" id="selectedGroup" name="selectedGroup">
+                    
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="score" class="form-label">Score:</label>
+                <input type="number" class="form-control" id="score" name="score" placeholder="Enter score" min="0" max="100" required>
+            </div>
+            <button type="submit" class="btn btn-primary" >Submit Score</button>
+        </form>
+    </div>
+
+        
+        
+               
+
+    </section>
+
+</main>
+
+<script>
+function updateGroups(projectId) {
+    document.getElementById('selectedGroup').innerHTML = '<option value="" selected disabled>-- Select a Group --</option>';
+
+    if (projectId) {
+        fetch(`/get_groups_by_project/${projectId}`)
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('selectedGroup');
+            data.groups.forEach(group => {
+                const option = new Option(group.name, group.id);
+                select.add(option);
+            });
+        });
+    }
+}
+document.getElementById('selectedGroup').addEventListener('change', function() {
+    var groupId = this.value;
+    var projectId = document.getElementById('selectedProject').value;
+    fetch(`/get_group_score/${projectId}/${groupId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('score').value = data.score;
+        });
+});
+</script>
+{% include 'js.html' %}
+
+</body>
+</html>

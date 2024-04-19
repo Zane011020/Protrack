@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include 'head.html' %}
+
+<body>
+
+    {% include 'header.html' %}
+    {% include 'sidebar.html' %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>Project Detail</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item active">Project Detail</li>
+            </ol>
+        </nav>
+    </div>
+
+    
+    <section class="section">
+        <!-- Select Project -->
+        <div class="select-project mb-4">
+            <h3>Select Project</h3>
+            <form method="POST" action="{{ url_for('detail') }}">
+                <select class="form-control" name="projectName" onchange="this.form.submit()">
+                    <option value="">-- Select a Project --</option>
+                    {% for project in projects %}
+                        <option value="{{ project.id }}" {{ 'selected' if selected_project and selected_project.id == project.id }}>{{ project.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        {% if selected_project %}
+        <div class="project-details">
+            <h3>Project Details for: {{ selected_project.name }}</h3>
+            <p><strong>Description:</strong> {{ selected_project.description }}</p>
+            <p><strong>Start Date:</strong> {{ selected_project.start_date.strftime('%Y-%m-%d') }}</p>
+            <p><strong>Instructor:</strong> {{ selected_project.instructor.username }}</p>
+            <p><strong>Your group name:</strong> {{ group.name }}</p>
+            <h4>Your Group's Tasks:</h4>
+            <ul>
+                {% for task in tasks %}
+                    <li>{{ task.name }} - Due: {{ task.end_date.strftime('%Y-%m-%d') }} - Assigned to: {{ task.user.username }} - Status: {{task.status}}</li>
+                {% else %}
+                    <li>No tasks assigned.</li>
+                {% endfor %}
+            </ul>
+            <p><strong>Final Rating:</strong> {{ groups_ratings[group] }}</p>
+        </div>
+        {% endif %}
+
+        <h3 class="mt-4">Feedback</h3>
+        <ul class="list-group">
+            
+            {% for message in messages %}
+                {% if message.user.role == 'Teacher' %}
+                    <li class="list-group-item">
+                        <strong>{{ message.user.username }}</strong>: {{ message.content }}
+                        <div class="text-muted" style="font-size: small;">
+                            Sent on {{ message.date_sent.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </div>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="list-group-item">No feedback found.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+</main>
+
+<!-- ... Your footer and other content ... -->
+
+{% include 'js.html' %}
+
+</body>
+</html>

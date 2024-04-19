@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include 'head.html' %}
+
+<body>
+
+    {% include 'header.html' %}
+    {% include 'sidebar.html' %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="alert-container">
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+        <h1>Project Detail</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item active">Project Detail</li>
+            </ol>
+        </nav>
+    </div>
+
+    
+    <section class="section">
+        <div class="select-project mb-4">
+            <h3>Select Project</h3>
+            <form method="POST">
+                <select class="form-control" name="projectName" onchange="this.form.submit()">
+                    <option value="">-- Select a Project --</option>
+                    {% for project in projects %}
+                        <option value="{{ project.id }}" {{ 'selected' if selected_project and selected_project.id == project.id }}>{{ project.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    
+        {% if selected_project %}
+        <div class="project-details">
+            <h3>Project Details for: {{ selected_project.name }}</h3>
+            <p><strong>Description:</strong> {{ selected_project.description }}</p>
+            <p><strong>Start Date:</strong> {{ selected_project.start_date.strftime('%Y-%m-%d') }}</p>
+
+            <h4>Groups and Their Tasks:</h4>
+            {% for group, tasks in groups_tasks.items() %}
+                <div>
+                    <h5>{{ group.name }}'s Tasks:</h5>
+                    <ul>
+                        {% for task in tasks %}
+                            <li>{{ task.name }} - Due: {{ task.end_date.strftime('%Y-%m-%d') }} - Status: {{ task.status }}</li>
+                        {% else %}
+                            <li>No tasks assigned.</li>
+                        {% endfor %}
+                    </ul>
+                    <p><strong>Final Rating:</strong> {{ groups_ratings[group] }}</p>
+                </div>
+            {% else %}
+                <p>No groups found for this project.</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        
+        
+        
+
+
+        {% if selected_project %}
+        <h3>Project member contact</h3>
+            {% for group, members in groups_members.items() %}
+            <h3>{{ group.name }} Members</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td>{{ member.username }}</td>
+                            <td>{{ member.email }}</td>
+
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3">No members in this group.</td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+                {% else %}
+                    <p>No groups found for this project.</p>
+                {% endfor %}
+            {% endif %}   
+
+    </section>
+
+</main>
+
+<!-- ... Your footer and other content ... -->
+
+{% include 'js.html' %}
+
+</body>
+</html>

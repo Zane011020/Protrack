@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+    <html lang="en">
+
+    {% include 'head.html' %}
+
+    <body>
+
+        {% include 'header.html' %}
+        {% include 'sidebar.html' %}
+
+        <main id="main" class="main">
+            <div class="pagetitle">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="alert-container">
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                <h1>Project member contact</h1>
+                <nav>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                        <li class="breadcrumb-item active">Project member contact</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <section class="section">
+                <h2>Select your Group</h2>
+                <form method="post" action="">
+                    <div class="form-group">
+                        <select class="form-control" name="selectedGroup" onchange="this.form.submit()">
+                            <option value="" selected disabled>-- Select Group --</option>
+                            {% for group in groups %}
+                            <option value="{{ group.id }}" {% if selected_group and selected_group.id == group.id %} selected {% endif %}>{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+
+                <h2>Team Member Contacts</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                            <tr>
+                                <td>{{ member.user.username }}</td>
+                                <td>{{ member.user.email }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+
+                <form method="post" action="{{ url_for('projectmember_contact') }}">
+                    <input type="hidden" name="selectedGroup" value="{{ selected_group.id if selected_group else '' }}">
+                    <h2 class="mt-4">Communication Area</h2>
+                    <textarea class="form-control" name="messageContent" id="task" rows="3"></textarea>
+                    <button class="btn btn-primary mt-2" name="sendMessage">Send Messages</button>
+                </form>
+
+                
+    <h2 class="mt-4">Group Messages</h2>
+    <ul class="list-group">
+        {% if messages %}
+            {% for message in messages %}
+                <li class="list-group-item">
+                    <strong>{{ message.user.username }}</strong>: {{ message.content }}
+                    <div class="text-muted" style="font-size: small;">
+                        Sent on {{ message.date_sent.strftime('%Y-%m-%d %H:%M:%S') }}
+                    </div>
+                </li>
+            {% endfor %}
+        {% else %}
+            <li class="list-group-item">No messages found.</li>
+        {% endif %}
+    </ul>
+
+    <h2 class="mt-4">Assigned Tasks</h2>
+    <ul class="list-group">
+        {% for task in tasks %}
+        <li class="list-group-item">
+            <strong>{{ task.name }}</strong>
+            <p>{{ task.description }}</p>
+            <small>Assigned to: {{ task.user.username }} | Start: {{ task.start_date.strftime('%Y-%m-%d') }} | End: {{ task.end_date.strftime('%Y-%m-%d') }}</small>
+        </li>
+        {% else %}
+        <li class="list-group-item">No tasks assigned.</li>
+        {% endfor %}
+    </ul>
+
+
+                
+
+    <h2>Assign Tasks</h2>
+    <form method="post" action="{{ url_for('projectmember_contact') }}">
+        <input type="hidden" name="selectedGroup" value="{{ selected_group.id if selected_group else '' }}">
+
+        <div class="form-group">
+            <label for="memberName">Team Member:</label>
+            <select class="form-control" name="assignedTo">
+                <option value="" selected disabled>-- Select a member --</option>
+                {% for member in members %}
+                <option value="{{ member.student_id }}">{{ member.user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="projectId">Project:</label>
+            <select class="form-control" name="projectId" id="projectId" required>
+                <option value="" selected disabled>-- Select a project --</option>
+                {% for project in projects %}
+                <option value="{{ project.id }}">{{ project.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+    <label for="taskName">Task Name:</label>
+    <input type="text" class="form-control" name="taskName" id="taskName" required>
+</div>
+
+        <div class="form-group">
+            <label for="taskDescription">Task:</label>
+            <textarea class="form-control" name="taskDescription" id="taskDescription" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="startDate">Start Date:</label>
+            <input type="date" class="form-control" name="startDate" id="startDate" required>
+        </div>
+        <div class="form-group">
+            <label for="endDate">End Date:</label>
+            <input type="date" class="form-control" name="endDate" id="endDate" required>
+        </div>
+        <button class="btn btn-primary" name="assignTask">Assign Task</button>
+    </form>
+
+
+            </section>
+        </main>
+
+        {% include 'js.html' %}
+    </body>
+
+    </html>
